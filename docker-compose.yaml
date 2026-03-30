@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   dremio:
     image: dremio/dremio-oss
@@ -20,9 +18,12 @@ services:
       - dremio-net
     depends_on:
       - dremio
+    env_file:
+      - .env
 
 volumes:
   dremio_data:
+    external: true   # 👈 ESSENCIAL
 
 networks:
   dremio-net:

@@ -6,7 +6,7 @@ teste_dremio_dbt:
       software_host: 'dremio'
       port: 9047
       user: 'suporte'
-      password: 'L0c@L123'
+      password: "{{ env_var('DBT_PASSWORD') }}"
       auth_type: 'username_password'
       use_ssl: false
 # No Dremio OSS, o 'database' deve ser DREMIO ou o nome do seu Space
