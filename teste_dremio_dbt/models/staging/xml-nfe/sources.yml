@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: mysql_xml
+    database: "xml-leitura"
+    schema: "05951356_nfe"
+    tables:
+      - name: prod
+      - name: icms
+      - name: ipi
+      - name: cofins
+      - name: log
+      - name: ide

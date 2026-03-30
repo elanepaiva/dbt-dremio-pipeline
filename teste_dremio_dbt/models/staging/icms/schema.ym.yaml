@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: stg_0000
+    description: "Registro de abertura do arquivo digital. Contém o CNPJ, IE e o período da escrituração (Mês/Ano)."
+  
+  - name: stg_c100
+    description: "Cabeçalho das Notas Fiscais (NF-e). Aqui validamos a Chave de Acesso e o Valor Total da Nota informado pelo contador."
+    
+  - name: stg_c170
+    description: "Itens das Notas Fiscais do SPED. Usado para conferir se o CFOP e a Alíquota por produto estão corretos."
+
+  - name: stg_e110
+    description: "Resumo da Apuração do ICMS. É o valor final que a empresa deve pagar ou o saldo credor a transportar."

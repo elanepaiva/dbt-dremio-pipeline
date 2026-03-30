@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  dremio:
+    image: dremio/dremio-oss
+    container_name: dremio
+    ports:
+      - "9047:9047"
+    volumes:
+      - dremio_data:/opt/dremio/data
+    networks:
+      - dremio-net
+
+  dbt:
+    build: .
+    container_name: dbt
+    volumes:
+      - ./teste_dremio_dbt:/usr/app
+    networks:
+      - dremio-net
+    depends_on:
+      - dremio
+
+volumes:
+  dremio_data:
+
+networks:
+  dremio-net:

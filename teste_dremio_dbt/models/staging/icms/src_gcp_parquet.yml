@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: gcp_sped
+    database: GCP
+    schema: '"05951356-20260211222705-bf8a65a0"."EFD_ICMS_IPI"'
+    tables:
+      # --- METADADOS ---
+      - name: "arquivos.parquet"
+        description: "Log de controle dos arquivos processados no GCP."
+
+      # --- BLOCO 0: ABERTURA E IDENTIFICAÇÃO ---
+      - name: "0000.parquet"
+        description: "Abertura do arquivo digital e identificação da entidade."
+
+      # --- BLOCO C: DOCUMENTOS FISCAIS (MERCADORIAS) ---
+      - name: "C100.parquet"
+        description: "Nota Fiscal (Código 01, 1B, 04, 55 e 65) - Dados do cabeçalho."
+      
+      - name: "C170.parquet"
+        description: "Itens do Documento (Código 01, 1B, 04 e 55)."
+
+      - name: "C190.parquet"
+        description: "Registro Analítico do Documento (Agrupamento por CST, CFOP e Alíquota)."
+
+      # --- BLOCO E: APURAÇÃO DO ICMS ---
+      - name: "E110.parquet"
+        description: "Apuração do ICMS - Operações Próprias."
+
+      # --- BLOCO 9: ENCERRAMENTO ---
+      - name: "9999.parquet"
+        description: "Encerramento do arquivo digital."
