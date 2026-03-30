@@ -1,3 +1,6 @@
+# Ignore arquivos sensíveis
+.env
+
 # dbt
 target/
 dbt_packages/
