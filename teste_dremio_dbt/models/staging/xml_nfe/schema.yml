@@ -1,0 +1,132 @@
+version: 2
+
+sources:
+  - name: mysql_xml
+    database: "xml-leitura"
+    schema: "05951356_nfe"
+    tables:
+      - name: prod
+      - name: icms
+      - name: ipi
+      - name: cofins
+      - name: log
+      - name: ide
+      - name: emit
+      - name: pis
+      - name: icmstot
+      - name: dest
+      - name: enderDest
+
+models:
+  - name: stg_log
+    description: "Filtra apenas notas com status Processado e remove duplicatas."
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_ide
+    description: "Identificação da Nota (Data, Chave, Número, Valores Totais)."
+    columns:
+      - name: nfe_id
+        description: "Chave de acesso da NF-e (ID único)."
+        tests:
+          - not_null
+          - unique 
+          - relationships:
+              to: ref('stg_log')
+              field: id
+
+      - name: numero_nota
+        description: "Número sequencial da nota fiscal (nNF)."
+        tests:
+          - not_null
+
+      - name: tipo_operacao
+        description: "0=Entrada, 1=Saída (tpNF)."
+        tests:
+          - accepted_values:
+              values: [0, 1]
+
+      - name: data_emissao
+        description: "Data e hora da emissão da nota (dhEmi)."
+        tests:
+          - not_null
+
+      - name: valor_total_nota
+        description: "Valor total da NF-e (vNF) para conferência com a soma dos itens."
+        tests:
+          - not_null # Toda nota processada deve ter um valor total
+
+  - name: stg_emit
+    description: "Dados do Emitente (CNPJ)."
+    columns:
+      - name: nfe_id
+        tests:
+          - not_null
+      - name: cnpj_emitente
+        tests:
+          - not_null # Garante que toda nota tenha um emitente identificado
+
+  - name: stg_prod
+    description: "Itens da nota fiscal."
+    columns:
+      - name: nfe_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_ide')
+              field: nfe_id # Garante que o produto pertence a uma nota que existe no IDE
+      - name: n_item
+        tests:
+          - not_null
+      - name: vProd
+        tests:
+          - not_null # O valor do produto não pode ser nulo para notas processadas
+
+  - name: stg_icms
+    description: "Dados de ICMS por item."
+    columns:
+      - name: nfe_id
+        tests:
+          - not_null
+      - name: vBC
+        description: "Base de cálculo do ICMS"
+
+  - name: stg_pis
+    description: "Dados de PIS por item."
+    columns:
+      - name: nfe_id
+        tests:
+          - not_null
+
+  - name: stg_cofins
+    description: "Dados de COFINS por item."
+    columns:
+      - name: nfe_id
+        tests:
+          - not_null
+  
+  - name: stg_icmstot
+    description: "Totais do ICMS e Valor Total da Nota (vNF)."
+    columns:
+      - name: nfe_id
+        tests:
+          - not_null
+          - unique
+      - name: valor_total_nota
+        tests:
+          - not_null
+
+  - name: stg_dest
+    description: "Dados de quem comprou a nota (Cliente + UF)."
+    columns:
+      - name: nfe_id
+        tests:
+          - not_null
+          - unique
+      - name: uf_cliente
+        description: "Estado do cliente (SP, RJ, etc)."
+        tests:
+          - not_null # Opcional: use se toda nota deve ter UF

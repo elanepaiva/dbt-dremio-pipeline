@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  # 1. A tabela de segurança (Reconciliação)
+  - name: fct_conferencia_integridade_carga
+    description: |
+      OBJETIVO: Garantir que 100% dos XMLs recebidos no Log foram processados.
+      SE VAZIA: Erro crítico na carga de dados ou ausência de arquivos na origem.
+      SE CHEIA: Painel de controle que valida o volume entre a stg_log e a camada final.
+      AÇÃO: Investigar falhas de importação caso o status apresente 'ALERTA'.
+    columns:
+      - name: status_conferencia
+        description: "Veredito visual: 'INTEGRIDADE 100%' ou 'ALERTA'."
+
+  # 2. A tabela principal do Dashboard (Consolidado)
+  - name: fct_notas_fiscais_consolidado
+    description: |
+      OBJETIVO: Apresentar a visão executiva de faturamento e status de auditoria por nota.
+      SE VAZIA: Não há notas fiscais processadas para o período selecionado.
+      SE CHEIA: Base principal para dashboards de vendas e visão geral de conformidade.
+      AÇÃO: Filtrar por 'status_nota' para identificar quais documentos precisam de revisão.
+
+  # 3. A tabela de inteligência (Auditoria por Item)
+  - name: fct_auditoria_qualidade_itens
+    description: |
+      OBJETIVO: Classificar tecnicamente a tributação de cada item (CST vs Alíquota).
+      SE VAZIA: Itens não foram classificados ou faltam regras de negócio no motor fiscal.
+      SE CHEIA: Base granular para identificar erros de parametrização tributária por produto.
+      AÇÃO: Exportar itens com 'ERRO' no parecer_fiscal para correção no cadastro do ERP.
+
+  # 4. A tabela de ação (Relatório de Erros)
+  - name: fct_relatorio_erros_fiscais
+    description: |
+      OBJETIVO: Listar apenas as irregularidades que exigem intervenção manual ou complementar.
+      SE VAZIA: Arquivos 100% em conformidade com as regras fiscais aplicadas.
+      SE CHEIA: Lista de pendências ('Blacklist') para atuação imediata do setor fiscal.
+      AÇÃO: Realizar correções manuais no PVA ou emitir notas complementares.
+
+  # 5. A tabela de conferência de alíquotas (O 'Bate' de Imposto)
+  - name: fct_divergencia_aliquota
+    description: |
+      OBJETIVO: Auditar a exatidão matemática dos impostos (ICMS/PIS/COFINS).
+      SE VAZIA: Os cálculos destacados nas notas batem perfeitamente com o cálculo teórico.
+      SE CHEIA: Identifica desvios de centavos ou erros grosseiros de base de cálculo.
+      AÇÃO: Ajustar arredondamentos no faturamento ou revisar alíquotas cadastradas.
+
+  # 6. A base alicerce (Itens Consolidados)
+  - name: fct_itens_notas_fiscais
+    description: |
+      OBJETIVO: Unificar dados de capas, itens e impostos em uma única visão atômica.
+      SE VAZIA: Falha no join entre as tabelas de itens e cabeçalho de notas.
+      SE CHEIA: Fonte de dados completa para qualquer análise detalhada de produtos.
+      AÇÃO: Utilizar como origem para cruzamentos complexos com dados do SPED.
+
+  # 7. O Painel de Resumo (Financeiro)
+  - name: fct_painel_conferencia_resumo
+    description: |
+      OBJETIVO: Consolidar os totais de ICMS para apuração mensal e fechamento.
+      SE VAZIA: Falha no processamento ou ausência de movimento fiscal no mês.
+      SE CHEIA: Visão executiva dos débitos, créditos e saldo a pagar/credor.
+      AÇÃO: Utilizar como base para preenchimento da GIA e conferência do SPED.

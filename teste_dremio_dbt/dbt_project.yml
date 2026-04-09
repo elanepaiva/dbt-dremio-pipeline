@@ -1,44 +1,52 @@
-
-# Name your project! Project names should contain only lowercase characters
-# and underscores. A good package name should reflect your organization's
-# name or the intended use of these models
 name: 'teste_dremio_dbt'
 version: '1.0.0'
 config-version: 2
 
-# This setting configures which "profile" dbt uses for this project.
 profile: 'teste_dremio_dbt'
 
-# These configurations specify where dbt should look for different types of files.
-# The `model-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
-asset-paths: ["assets"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:         # directories to be removed by `dbt clean`
+clean-targets:
   - "target"
   - "dbt_packages"
 
-
 models:
   teste_dremio_dbt:
-    # Configuração global: tudo como view por padrão
-    +materialized: view
 
+    # =========================================================
+    # STAGING (Camada de Limpeza / Raw)
+    # Destino: base.xml.camada_raw ou base.icms.camada_raw
+    # =========================================================
     staging:
-      # Tudo dentro de models/staging/xml-nfe vai para o schema @suporte.xml_nfe
-      xml-nfe:
-        +schema: xml_nfe
-      
-      # Tudo dentro de models/staging/icms vai para o schema @suporte.icms
-      icms:
-        +schema: icms
+      +database: base
+      +materialized: view
 
+      xml_nfe:
+        +schema: xml.camada_raw
+
+      icms:
+        +schema: icms.camada_raw
+
+    # =========================================================
+    # MARTS (Camada de Negócio / Consumo)
+    # Destino: base.xml.camada_consumo ou base.icms.camada_consumo
+# =========================================================
+    # MARTS (Camada de Negócio / Consumo)
+    # =========================================================
     marts:
-      # Seus modelos finais (fato e dimensão) em @suporte.fiscal
-      +schema: fiscal
+      +database: base
+      +materialized: view
+
+      xml_nfe:
+        +schema: xml.camada_consumo
+
+      icms:
+        +schema: icms.camada_consumo
+
+      consolidado:
+        +schema: consolidado # Aqui ele deve criar base.consolidado.fct...

@@ -1,8 +1,0 @@
-version: 2
-
-models:
-  - name: fct_confronto_xml_vs_sped
-    description: "Relatório Analítico de Divergências. Compara Chave por Chave o que está no MySQL vs o que está no SPED."
-  
-  - name: valida_divergencia_fiscal
-    description: "Visão focada apenas nos registros onde o valor de imposto ou a base de cálculo não batem."

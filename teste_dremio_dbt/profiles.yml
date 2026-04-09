@@ -3,20 +3,13 @@ teste_dremio_dbt:
   outputs:
     dev:
       type: dremio
-      software_host: 'dremio'
+      # Tente usar software_host ou dremio_host (alguns builds mudam isso)
+      software_host: "dremio" 
       port: 9047
-      user: 'suporte'
-      password: "{{ env_var('DBT_PASSWORD') }}"
-      auth_type: 'username_password'
-      use_ssl: false
-# No Dremio OSS, o 'database' deve ser DREMIO ou o nome do seu Space
-      database: "DREMIO" 
-      # O schema com @ indica o seu espaço pessoal (Home)
+      user: "suporte"
+      password: "L0c@L123"
+      # O dbt 1.10 às vezes exige esses campos explicitamente:
+      database: "base"
       schema: "@suporte"
-  models:
-  teste_dremio_dbt:
-    staging:
-      nfe_mysql:
-        +tags: "xml-nfe"   # Tudo que vier do MySQL ganha essa tag
-      nfe_s3_parquet:
-        +tags: "icms"      # Tudo que vier do Parquet ganha essa tag
+      software_edition: "software"
+      use_ssl: false

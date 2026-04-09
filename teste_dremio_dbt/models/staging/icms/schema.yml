@@ -1,0 +1,45 @@
+version: 2
+
+sources:
+  - name: gcp_sped
+    database: GCP
+    schema: '"05951356-20260211222705-bf8a65a0"."EFD_ICMS_IPI"'
+    tables:
+      - name: "arquivos.parquet"
+      - name: "0000.parquet"
+      - name: "C100.parquet"
+      - name: "0150.parquet"
+      - name: "0200.parquet"
+      - name: "C170.parquet"
+      - name: "C190.parquet"
+      - name: "E110.parquet"
+      - name: "E111.parquet"
+      - name: "9999.parquet"
+      - name: "K100.parquet"
+      - name: "K200.parquet"
+
+
+models:
+  - name: stg_0000
+    description: "Registro de abertura do arquivo digital. Contém o CNPJ, IE e o período da escrituração (Mês/Ano)."
+  
+  - name: stg_c100
+    description: "Cabeçalho das Notas Fiscais (NF-e). Aqui validamos a Chave de Acesso e o Valor Total da Nota informado pelo contador."
+    
+  - name: stg_c170
+    description: "Itens das Notas Fiscais do SPED. Usado para conferir se o CFOP e a Alíquota por produto estão corretos."
+
+  - name: stg_e110
+    description: "Resumo da Apuração do ICMS. É o valor final que a empresa deve pagar ou o saldo credor a transportar."
+
+  - name: stg_c190
+    description: "Registro Analítico do C100. Agrupamento por CST, CFOP e Alíquota. Fundamental para bater o total da nota com a tributação."
+
+  - name: stg_0150
+    description: "Tabela de Participantes (Clientes/Fornecedores). Contém CNPJ/CPF e Nomes para identificação nas notas."
+
+  - name: stg_0200
+    description: "Tabela de Identificação do Item (Produtos/Serviços). Contém a descrição e o NCM dos produtos."
+
+  - name: stg_e111
+    description: "Ajustes da Apuração do ICMS. Detalha créditos, débitos especiais e estornos que alteram o saldo final do imposto."   

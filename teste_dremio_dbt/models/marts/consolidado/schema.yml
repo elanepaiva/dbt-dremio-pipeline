@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: fct_confronto_spa_itens
+    description: |
+      OBJETIVO: Realizar o batimento detalhado entre os itens do XML (SPA) vs Itens do SPED (C170).
+      SE VAZIA: Não houve cruzamento de dados, possivelmente por falta de arquivos SPA ou SPED na base.
+      SE CHEIA: Base granular que expõe divergências de valores, quantidades ou notas omitidas por item.
+      DIFERENCIAL: Utiliza as 7 chaves de cruzamento para substituir os joins manuais do Alteryx.
+    columns:
+      - name: status_match
+        description: "Indica o nível de confiança do cruzamento (Match Total, Diferença de Valor, etc)."
+
+  - name: rpt_divergencias_spa
+    description: |
+      OBJETIVO: Isolar apenas as inconsistências encontradas no confronto XML vs SPED.
+      SE VAZIA: O arquivo SPED está 100% em conformidade com os XMLs de origem.
+      SE CHEIA: Relatório de exceção focado nas linhas onde o 'status_match' aponta divergência.
+      AÇÃO: Conciliar as notas listadas aqui para retificar o SPED antes do envio ao fisco.
+
+  - name: rpt_resumo_executivo
+    description: |
+      OBJETIVO: Consolidar os resultados da auditoria SPA (XML vs SPED) por empresa e tipo de ocorrência.
+      SE VAZIA: Não foram processados confrontos ou não há movimentação no período selecionado.
+      SE CHEIA: Dashboard executivo que quantifica o impacto financeiro das divergências encontradas.
+      AÇÃO: Utilizar como capa de relatório para o cliente, priorizando a correção dos CNPJs com maior risco financeiro.
+    columns:
+      - name: cnpj_emitente
+        description: "CNPJ da empresa auditada, extraído da chave de acesso para identificação da unidade."
+      - name: status_match
+        description: "Status do batimento. Principal filtro para encontrar erros de tributação."
+      - name: total_divergencia_financeira
+        description: "Soma absoluta das diferenças entre XML e SPED. Representa o risco ou oportunidade mapeada."
+
+  - name: rpt_sobra_sped
+    description: |
+      OBJETIVO: Identificar itens que foram escriturados no SPED mas não possuem um XML correspondente.
+      SE VAZIA: Todos os itens escriturados possuem lastro documental (XML).
+      SE CHEIA: Indica 'sobra' de escrituração, o que pode sugerir notas canceladas ou lançamentos indevidos.
+      AÇÃO: Verificar junto ao cliente se a nota foi realmente emitida ou se houve erro na recepção do XML.

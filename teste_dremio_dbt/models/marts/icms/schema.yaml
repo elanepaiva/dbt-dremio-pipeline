@@ -1,0 +1,129 @@
+version: 2
+
+models:
+  - name: fct_divergencia_sped_capa_analitico
+    description: |
+      OBJETIVO: Validar se o ICMS do C100 (Capa) bate com o C190 (Analítico).
+      SE VAZIA: Arquivo SPED consistente entre totais e detalhes.
+      SE CHEIA: Erro de integridade no arquivo; o SPED será rejeitado pelo fisco.
+      AÇÃO: Corrigir a geração do arquivo magnético ou ajuste manual no PVA.
+    columns:
+      - name: diferenca_centavos
+        description: "Diferença calculada entre os registros. Deve ser rigorosamente zero."
+        data_tests:
+          - accepted_values:
+              name: valida_zero_na_diferenca
+              values: [0]
+
+  - name: fct_icms_itens_detalhado
+    description: |
+      OBJETIVO: Detalhamento unitário de toda a tributação de ICMS das notas (C170).
+      SE VAZIA: Erro na leitura dos itens das notas fiscais ou ausência de registros analíticos.
+      SE CHEIA: Base granular para auditoria de alíquotas, reduções de base e CSTs.
+      AÇÃO: Cruzar com o cadastro de produtos para identificar erros de parametrização por NCM.
+    columns:
+      - name: status_auditoria_item
+        description: "Status do recálculo automático de ICMS (Base * Alíquota)."
+
+  - name: fct_confronto_st_entradas_saidas
+    description: |
+      OBJETIVO: Cruzar o ST pago na compra com o ST debitado/ressarcido na venda.
+      SE VAZIA: Ausência de movimentação de entrada ou saída para o período.
+      SE CHEIA: Descompasso de valores que impacta o fluxo de caixa do imposto.
+      AÇÃO: Validar a conta corrente de ST e identificar perdas de crédito.
+    columns:
+      - name: status_projeto
+        description: "Classifica a operação como potencial crédito (vendas interestaduais) ou operação interna."
+
+  - name: dim_produtos_st_diagnostico_cest
+    description: |
+      OBJETIVO: Validar se os produtos possuem o código CEST (obrigatório para ST).
+      SE VAZIA: Não há cadastro de produtos (0200) processado.
+      SE CHEIA: Itens com 'SEM CEST' impedem o ressarcimento ou geram multas.
+      AÇÃO: Exportar para o cliente corrigir o cadastro no ERP.
+    columns:
+      - name: status_cadastro
+        description: "Status de validação do CEST. Erros aqui impedem o protocolo de pedidos de ressarcimento."
+
+  - name: fct_icms_st_apuracao_por_item
+    description: |
+      OBJETIVO: Comparar o preço de venda com a base de ST da entrada (CAT-42/DRCST).
+      SE VAZIA: Operações sem incidência de ressarcimento ou complemento.
+      SE CHEIA: Base de cálculo para apuração de valores a restituir ou complementar.
+      AÇÃO: Processar o arquivo de ressarcimento para o fisco estadual.
+    columns:
+      - name: analise_st
+        description: "Indica se a operação gerou direito a ressarcimento ou obrigação de complemento."
+
+  - name: fct_icms_st_vendas_interestaduais
+    description: |
+      OBJETIVO: Analisar vendas para outros estados com retenção de ST.
+      SE VAZIA: Não houve operações interestaduais sujeitas a ST no período.
+      SE CHEIA: Base para conferência de GNREs e guias pagas a outros estados.
+      AÇÃO: Conferir se o imposto foi retido e recolhido corretamente para a UF de destino.
+    columns:
+      - name: estimativa_credito_recuperavel
+        description: "Cálculo estimado do valor que pode ser solicitado via ressarcimento imediato."
+
+  - name: fct_auditoria_st_entradas
+    description: |
+      OBJETIVO: Auditar o cálculo de Substituição Tributária nas notas de entrada.
+      SE VAZIA: Não foram processadas notas de entrada com incidência de ST.
+      SE CHEIA: Divergências entre o imposto destacado e o cálculo esperado (ICMS-ST).
+      AÇÃO: Revisar lançamentos fiscais ou notas de fornecedores.
+    columns:
+      - name: status_conferencia_st
+        description: "Indica se o cálculo do fornecedor bate com o motor de regras fiscal (Divergente/Ok)."
+
+  - name: fct_icms_st_creditos_entrada
+    description: |
+      OBJETIVO: Identificar valores de ICMS-ST que podem ser recuperados na entrada.
+      SE VAZIA: Não foram identificadas oportunidades de crédito de ST nas compras.
+      SE CHEIA: Valores de imposto pago anteriormente que permitem ressarcimento.
+      AÇÃO: Realizar a apropriação do crédito no livro fiscal ou CAT-42.
+    columns:
+      - name: valor_st_recuperavel
+        description: "Valor do imposto retido anteriormente passível de apropriação como crédito."
+
+  - name: fct_icms_resumo_mensal
+    description: |
+      OBJETIVO: Consolidar os totais de ICMS para apuração mensal e fechamento.
+      SE VAZIA: Falha no processamento ou ausência de movimento fiscal no mês.
+      SE CHEIA: Visão executiva dos débitos, créditos e saldo a pagar/credor.
+      AÇÃO: Utilizar como base para preenchimento da GIA e conferência do SPED.
+    columns:
+      - name: saldo_apurado
+        description: "Resultado final do período (Imposto a Pagar ou Saldo Credor)."
+
+  - name: fct_saidas_st_ressarcimento
+    description: |
+      OBJETIVO: Identificar operações de saída que geram direito ao ressarcimento do ICMS-ST.
+      SE VAZIA: Não houve saídas com direito a crédito no período analisado.
+      SE CHEIA: Notas fiscais que permitem recuperar o imposto retido anteriormente.
+      AÇÃO: Gerar o arquivo para CAT-42/ADRC-ST ou lançar o crédito na apuração.
+    columns:
+      - name: base_ressarcimento_calculada
+        description: "Valor da base utilizada para o cálculo do pedido de restituição do imposto."
+
+  - name: valida_aliquota_interna_sp
+    description: |
+      OBJETIVO: Validar se a alíquota interna aplicada segue a legislação de SP.
+      SE VAZIA: Todas as alíquotas internas aplicadas estão de acordo com o esperado.
+      SE CHEIA: Erro na parametrização de impostos (ex: 18% onde deveria ser 12%).
+      AÇÃO: Ajustar a matriz tributária no ERP para evitar pagamentos indevidos.
+    columns:
+      - name: status_aliquota
+        description: "Indica se a alíquota praticada está em conformidade com o RICMS-SP."
+        
+  - name: rpt_diagnostico_k100_k200
+    description: |
+      OBJETIVO: Validar a integridade do Bloco K (Estoque), comparando a abertura do período (K100) com os saldos (K200).
+      SE VAZIA: O Bloco K não foi informado no arquivo.
+      SE COM ALERTAS: Indica que o estoque "sumiu" em relação ao mês anterior ou que o K100 foi aberto mas o K200 veio vazio.
+      AÇÃO: Cobrar o cliente pela omissão de inventário ou erro na geração do Bloco K.
+    columns:
+      - name: status_auditoria
+        description: "Status evolutivo do estoque (OK, Erro de Omissão ou Estoque Zerado)."
+      - name: k200_anterior
+        description: "Quantidade de itens de estoque no mês imediatamente anterior para fins de comparação."
+   
